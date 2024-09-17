@@ -7,43 +7,38 @@ import '../AlunoList.css';
 function AlunoList() {
   const [alunos, setAlunos] = useState([]);
   const [mediaIRA, setMediaIRA] = useState(0);
-  const [colorize, setColorize] = useState(false);
+  const [colorToggle, setColorToggle] = useState(false);
 
   useEffect(() => {
     fetch('http://localhost:5000/alunos')
       .then(response => response.json())
       .then(data => {
         setAlunos(data);
-        calcularMediaIRA(data);
-      });
+        const totalIRA = data.reduce((acc, aluno) => acc + aluno.ira, 0);
+        setMediaIRA(totalIRA / data.length);
+      })
+      .catch(error => console.error('Erro ao buscar alunos:', error));
   }, []);
 
-  const calcularMediaIRA = (alunos) => {
-    if (alunos.length === 0) return;
-    const totalIRA = alunos.reduce((acc, aluno) => acc + aluno.ira, 0);
-    const media = totalIRA / alunos.length;
-    setMediaIRA(media.toFixed(2));
+  const handleDelete = (id) => {
+    fetch(`http://localhost:5000/alunos/${id}`, {
+      method: 'DELETE',
+    })
+      .then(() => setAlunos(alunos.filter(aluno => aluno.id !== id)))
+      .catch(error => console.error('Erro ao deletar aluno:', error));
   };
 
-  const deletarAluno = (id) => {
-    fetch(`http://localhost:5000/alunos/${id}`, { method: 'DELETE' })
-      .then(() => setAlunos(alunos.filter(aluno => aluno.id !== id)));
-  };
-
-  const toggleColorize = () => {
-    setColorize(!colorize);
+  const toggleColors = () => {
+    setColorToggle(!colorToggle);
   };
 
   return (
-    <Container>
-      <h2 className="my-4">Lista de Alunos</h2>
-      <Button variant="info" onClick={toggleColorize} className="mb-3">
-        {colorize ? 'Remover Colorização' : 'Colorir Alunos'}
-      </Button>
+    <div>
+      <h2>Lista de Alunos</h2>
+      <Button onClick={toggleColors}>Pintar</Button>
       <Table striped bordered hover>
-        <thead className="table-dark">
+        <thead>
           <tr>
-            <th>ID</th>
             <th>Nome</th>
             <th>Curso</th>
             <th>IRA</th>
@@ -52,29 +47,30 @@ function AlunoList() {
         </thead>
         <tbody>
           {alunos.map(aluno => (
-            <tr key={aluno.id}
-              className={
-                colorize
-                  ? aluno.ira < mediaIRA ? 'table-danger' : 'table-primary'
-                  : ''
-              }>
-              <td>{aluno.id}</td>
+            <tr key={aluno.id} className={
+              colorToggle
+                ? aluno.ira < mediaIRA ? 'table-danger' : 'table-primary'
+                : ''
+            }>
               <td>{aluno.nome}</td>
               <td>{aluno.curso}</td>
               <td>{aluno.ira}</td>
               <td>
-                <Button as={Link} to={`/editar-aluno/${aluno.id}`} variant="primary" size="sm">Editar</Button>{' '}
-                <Button variant="danger" size="sm" onClick={() => deletarAluno(aluno.id)}>Deletar</Button>
+                <Link to={`/editar-aluno/${aluno.id}`}>
+                  <Button variant="warning" className="me-2">Editar</Button>
+                </Link>
+                <Button variant="danger" onClick={() => handleDelete(aluno.id)}>Deletar</Button>
               </td>
             </tr>
           ))}
-          <tr className="bg-warning">
-            <td colSpan="3"><strong>Média do IRA</strong></td>
-            <td colSpan="2"><strong>{mediaIRA}</strong></td>
+          <tr className="table-warning">
+            <td colSpan="2">Média IRA</td>
+            <td>{mediaIRA.toFixed(2)}</td>
+            <td></td>
           </tr>
         </tbody>
       </Table>
-    </Container>
+    </div>
   );
 }
 
