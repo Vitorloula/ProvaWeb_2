@@ -36,7 +36,7 @@ function AlunoList() {
     <div>
       <h2>Lista de Alunos</h2>
       <Button onClick={toggleColors}>Pintar</Button>
-      <Table striped bordered hover>
+      <Table bordered hover>
         <thead>
           <tr>
             <th>Nome</th>

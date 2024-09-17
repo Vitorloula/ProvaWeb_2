@@ -43,7 +43,7 @@ function AlunoGroupedByCurso() {
         Object.keys(alunosAgrupados).map(curso => (
           <div key={curso} className="mb-5">
             <h3 className="mb-3">{curso}</h3>
-            <Table striped bordered hover className="table-fixed">
+            <Table bordered hover className="table-fixed">
               <thead className="table-dark">
                 <tr>
                   <th style={{ width: '10%' }}>ID</th>
@@ -56,7 +56,7 @@ function AlunoGroupedByCurso() {
                   <tr
                     key={aluno.id}
                     className= {
-                      aluno.ira > 7 ? 'table-success ' : ' '
+                      aluno.ira >= 7 ? 'table-success ' : ' '
                     }
                   >
                     <td>{aluno.id}</td>
