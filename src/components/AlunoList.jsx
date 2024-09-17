@@ -4,11 +4,17 @@ import { Table, Button } from 'react-bootstrap';
 
 function AlunoList() {
   const [alunos, setAlunos] = useState([]);
+  const [mediaIRA, setMediaIRA] = useState(0);
+  const [colorToggle, setColorToggle] = useState(false);
 
   useEffect(() => {
     fetch('http://localhost:5000/alunos')
       .then(response => response.json())
-      .then(data => setAlunos(data))
+      .then(data => {
+        setAlunos(data);
+        const totalIRA = data.reduce((acc, aluno) => acc + aluno.ira, 0);
+        setMediaIRA(totalIRA / data.length);
+      })
       .catch(error => console.error('Erro ao buscar alunos:', error));
   }, []);
 
@@ -20,9 +26,14 @@ function AlunoList() {
       .catch(error => console.error('Erro ao deletar aluno:', error));
   };
 
+  const toggleColors = () => {
+    setColorToggle(!colorToggle);
+  };
+
   return (
     <div>
       <h2>Lista de Alunos</h2>
+      <Button onClick={toggleColors}>Pintar</Button>
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -34,7 +45,11 @@ function AlunoList() {
         </thead>
         <tbody>
           {alunos.map(aluno => (
-            <tr key={aluno.id}>
+            <tr key={aluno.id} className={
+              colorToggle
+                ? aluno.ira < mediaIRA ? 'table-danger' : 'table-primary'
+                : ''
+            }>
               <td>{aluno.nome}</td>
               <td>{aluno.curso}</td>
               <td>{aluno.ira}</td>
@@ -46,6 +61,11 @@ function AlunoList() {
               </td>
             </tr>
           ))}
+          <tr className="table-warning">
+            <td colSpan="2">Média IRA</td>
+            <td>{mediaIRA.toFixed(2)}</td>
+            <td></td>
+          </tr>
         </tbody>
       </Table>
     </div>
